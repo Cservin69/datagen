@@ -5,5 +5,5 @@ pub const COUNTRIES: &[&str] = &[
     "Norway","Finland","Egypt","Nigeria","South Africa","Saudi Arabia","Iran","Iraq","Israel",
     "United Arab Emirates","Qatar","Canada","United States","Mexico","Brazil","Argentina","Chile",
     "Colombia","Peru","Venezuela","Ukraine","Belarus","Kazakhstan","Uzbekistan","Malaysia","Singapore",
-    "Thailand","Vietnam","Bangladesh","Pakistan"
+    "Thailand","Viet Nam","Bangladesh","Pakistan"
 ];

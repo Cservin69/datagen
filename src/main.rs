@@ -5,12 +5,10 @@ use myerror::MyError;
 use rand::{thread_rng, Rng};
 use std::fs::File;
 use std::io::{self, prelude::*};
-use data::clients::CLIENTS;
 use chrono::NaiveDate;
 use crate::data::countries::COUNTRIES;
 use std::sync::{Arc, Mutex};
 use rayon::prelude::*;
-use serde_json::Value;
 use crate::data::ccy::CCY;
 use crate::data::products::PRODUCTS_AND_SERVICES;
 
@@ -27,9 +25,9 @@ fn main() -> Result<(), MyError> {
 
 
     // Define the possible values for each column
-    // let clients= CLIENTS;
-    let clients= clients_arc.lock().unwrap();;
-    let country_of_origin = vec!["New-Zealand", "Singapore", "Vietnam"];
+
+    let clients= clients_arc.lock().unwrap();
+    let country_of_origin = vec!["New Zealand", "Singapore", "Viet Nam"];
     let transactions = vec!["DEBIT", "CREDIT"];
     let partners = (1..=55).map(|n| format!("partner{}", n)).collect::<Vec<_>>();
     let currencies = CCY;
