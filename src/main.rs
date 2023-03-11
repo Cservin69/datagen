@@ -24,10 +24,15 @@ fn main() -> Result<(), MyError> {
     let  read_clients: Vec<String> = Vec::new();
     let clients_arc = Arc::new(Mutex::new(read_clients.clone()));
     parse_client_ids_and_insert_into_vec(&json_file_path, &output_file_path, &clients_arc)?;
+    // for egyen in clients_arc.lock().unwrap().iter() {
+    //     println!("can work with this client: {}", egyen);
+    // }
+
 
 
     // Define the possible values for each column
-    let clients= CLIENTS;
+    // let clients= CLIENTS;
+    let clients= clients_arc.lock().unwrap();;
     let country_of_origin = vec!["New-Zealand", "Singapore", "Vietnam"];
     let transactions = vec!["DEBIT", "CREDIT"];
     let partners = (1..=55).map(|n| format!("partner{}", n)).collect::<Vec<_>>();
@@ -48,7 +53,7 @@ fn main() -> Result<(), MyError> {
 
     // Write 100 data rows
     for _ in 0..10000 {
-            let client = random_element(&clients)?;
+            let client  = random_element(&clients)?;
             // rest of the code that uses the `client` variable
 
         let transaction = random_element(&transactions)?;
