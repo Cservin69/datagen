@@ -1,4 +1,14 @@
 pub const CLIENTS: &[&str] = &[
-    "client1", "client2", "client3", "client4", "client5",
-    "client6", "client7", "client8", "client9", "client10",
+
+    "nm0001699",
+
+    "nm0302108",
+
+    "nm6550415",
+
+    "nm6558614",
+
+    "nm6698525",
+
+    "nm0000018","nm0000173","nm0000204","nm0000606","nm0005512"
 ];
