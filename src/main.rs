@@ -77,91 +77,50 @@ fn main() -> Result<(), MyError> {
 
     Ok(())
 }
+
+//json with data and then list
 fn parse_client_ids_from_json(json_file_path: &str, output_file_path: &str) -> std::io::Result<()> {
     // Open the input JSON file and read its contents
     let mut file = File::open(json_file_path)?;
     let mut contents = String::new();
     file.read_to_string(&mut contents)?;
 
-    // Parse the JSON contents into a vector of JSON objects
-    let json_objects: Vec<serde_json::Value> = serde_json::from_str(&contents)?;
+    // Parse the top-level JSON object and extract the "data" array
+    let json_object: serde_json::Value = serde_json::from_str(&contents)?;
+    let data_array = json_object.get("data").unwrap().as_array().unwrap();
 
-    // Extract the "ClientID" parameter from each JSON object and write it to the output file
+    // Extract the "key" parameter from each object in the "data" array and write it to the output file
     let mut output_file = File::create(output_file_path)?;
-    writeln!(output_file, "ClientID")?;
-    for json_object in json_objects {
+    writeln!(output_file, "ClientId")?;
+    for json_object in data_array {
         if let Some(client_id) = json_object.get("key") {
             let client_id_str = client_id.as_str().unwrap();
             writeln!(output_file, "{}", client_id_str)?;
         }
     }
+    println!("finished json parsing fine");
 
     Ok(())
 }
-// fn parse_client_ids_from_json(json_file_path: &str, output_file_path: &str) -> std::io::Result<()> {
-//     // Open the input JSON file and read its contents
-//     let mut file = File::open(json_file_path)?;
-//     let mut contents = String::new();
-//     file.read_to_string(&mut contents)?;
-//
-//     // Parse the JSON contents into a vector of JSON objects
-//     let json_objects: Vec<serde_json::Value> = serde_json::from_str(&contents)?;
-//
-//     // Extract the "ClientID" parameter from each JSON object and write it to the output file
-//     let mut output_file = File::create(output_file_path)?;
-//     writeln!(output_file, "ClientId")?;
-//     for json_object in json_objects {
-//         if let Some(client_id) = json_object.get("key") {
-//             let client_id_str = client_id.as_str().unwrap();
-//             writeln!(output_file, "{}", client_id_str)?;
-//         }
-//     }
-//
-//     Ok(())
-// }
-
-
-// fn parse_client_ids_and_insert_into_vec(json_file_path: &str, output_file_path: &str,
-//                                         clients: &Arc<Mutex<Vec<String>>>) -> serde_json::Result<()> {
-//     // Open the input JSON file and read its contents
-//     let mut file = File::open(json_file_path).unwrap();
-//     let mut contents = String::new();
-//     file.read_to_string(&mut contents).unwrap();
-//
-//     // Parse the JSON contents into a vector of JSON objects
-//     let json_objects: Vec<Value> = serde_json::from_str(&contents)?;
-//
-//     // Extract the "ClientID" parameter from each JSON object and write it to the output file
-//     let output_file = Arc::new(Mutex::new(File::create(output_file_path).unwrap()));
-//     writeln!(output_file.lock().unwrap(), "ClientID").unwrap();
-//
-//     json_objects.par_iter().for_each(|json_object| {
-//         if let Some(client_id) = json_object.get("clientId") {
-//             let client_id_str = client_id.as_str().unwrap().to_string();
-//             writeln!(output_file.lock().unwrap(), "{}", client_id_str).unwrap();
-//             clients.lock().unwrap().push(client_id_str);
-//         }
-//     });
-//
-//     Ok(())
-// }
 
 fn parse_client_ids_and_insert_into_vec(json_file_path: &str, output_file_path: &str,
                                         clients: &Arc<Mutex<Vec<String>>>) -> serde_json::Result<()> {
+    println!("started the vec parsing");
     // Open the input JSON file and read its contents
     let mut file = File::open(json_file_path).unwrap();
     let mut contents = String::new();
     file.read_to_string(&mut contents).unwrap();
 
-    // Parse the JSON contents into a vector of JSON objects
-    let json_objects: Vec<Value> = serde_json::from_str(&contents)?;
+    // Parse the top-level JSON object and extract the "data" array
+    let json_object: serde_json::Value = serde_json::from_str(&contents)?;
+    let data_array = json_object.get("data").unwrap().as_array().unwrap();
 
-    // Extract the "ClientID" parameter from each JSON object and write it to the output file
+    // Extract the "key" parameter from each object in the "data" array and write it to the output file
     let output_file = Arc::new(Mutex::new(File::create(output_file_path).unwrap()));
-    writeln!(output_file.lock().unwrap(), "ClientID").unwrap();
+    writeln!(output_file.lock().unwrap(), "ClientId").unwrap();
 
-    json_objects.par_iter().for_each(|json_object| {
-        if let Some(client_id) = json_object.get("clientId") {
+    data_array.par_iter().for_each(|json_object| {
+        if let Some(client_id) = json_object.get("key") {
             let client_id_str = client_id.as_str().unwrap().to_string();
             writeln!(output_file.lock().unwrap(), "{}", client_id_str).unwrap();
             clients.lock().unwrap().push(client_id_str);
