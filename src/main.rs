@@ -18,45 +18,50 @@ fn main() -> Result<(), MyError> {
     let output_file_path = "clientids.csv";
 
 
-    let  read_clients: Vec<String> = Vec::new();
+    let read_clients: Vec<String> = Vec::new();
     let clients_arc = Arc::new(Mutex::new(read_clients.clone()));
     parse_client_ids_and_insert_into_vec(&json_file_path, &output_file_path, &clients_arc)?;
 
 
-
-    // Define the possible values for each column
-
-    let clients= clients_arc.lock().unwrap();
+// Define the possible values for each column
+    let clients = clients_arc.lock().unwrap();
     let country_of_origin = vec!["New Zealand", "Singapore", "Viet Nam"];
-    let transactions = vec!["DEBIT", "CREDIT"];
+    let transactions = vec!["DEBIT", "CREDIT", "WITHRAVAL", "DEPOSIT"];
+    let iscash = vec!["CASH", "TRANSFER"];
     let partners = (1..=55).map(|n| format!("partner{}", n)).collect::<Vec<_>>();
     let currencies = CCY;
     let countries = COUNTRIES;
     let producst_services = PRODUCTS_AND_SERVICES;
 
-
-    // Open the file for writing
+// Open the file for writing
     let mut file = File::create("transactions.csv")?;
 
-    // Write the header row
-    writeln!(file, "client,country_of_origin,transaction_type,date,partner,destination_country,ccy,\
-    amount,product")?;
+// Write the header row
+    writeln!(
+        file,
+        "client,country_of_origin,transaction_type,date,partner,destination_country,ccy,amount,product"
+    )?;
 
-    // Create a random number generator
+// Create a random number generator
     let mut rng = thread_rng();
 
-    // Write 100 data rows
+// Write 100 data rows
     for _ in 0..10000 {
-            let client  = random_element(&clients)?;
-            // rest of the code that uses the `client` variable
+        let client = random_element(&clients)?;
+        // rest of the code that uses the `client` variable
 
         let transaction = random_element(&transactions)?;
         let date = NaiveDate::from_ymd_opt(2023, 1, 1).unwrap() - chrono::Duration::days(rng.gen_range(0..365));
         let partner = random_element(&partners)?;
         let country = random_element(&countries)?;
         let ccy = random_element(&currencies)?;
-        let amount: u32 =  rng.gen_range(0..500)*100;
-        let product = random_element(&producst_services)?;
+        let amount: u32 = rng.gen_range(0..500) * 100;
+
+        let product = match transaction {
+            &"WITHRAVAL" | &"DEPOSIT" => random_element(&iscash)?,
+            &"DEBIT" | &"CREDIT" => random_element(&producst_services)?,
+            _ => unreachable!(), // this should never happen
+        };
 
         writeln!(
             file,
@@ -71,7 +76,6 @@ fn main() -> Result<(), MyError> {
             amount,
             product
         )?;
-
     }
 
     Ok(())
