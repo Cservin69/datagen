@@ -4,7 +4,7 @@ mod myerror;
 use myerror::MyError;
 use rand::{thread_rng, Rng};
 use std::fs::File;
-use std::io::{self, prelude::*};
+use std::io::{self, BufWriter, prelude::*};
 use chrono::NaiveDate;
 use crate::data::countries::COUNTRIES;
 use std::sync::{Arc, Mutex};
@@ -33,12 +33,13 @@ fn main() -> Result<(), MyError> {
     let countries = COUNTRIES;
     let producst_services = PRODUCTS_AND_SERVICES;
 
-// Open the file for writing
-    let mut file = File::create("transactions.csv")?;
+// Open the file for writing using a buffered writer
+    let file = File::create("transactions.csv")?;
+    let mut writer = BufWriter::new(file);
 
 // Write the header row
     writeln!(
-        file,
+        writer,
         "client,country_of_origin,transaction_type,date,partner,destination_country,ccy,amount,product"
     )?;
 
@@ -62,7 +63,8 @@ fn main() -> Result<(), MyError> {
 
         let country = random_element(countries)?;
         let ccy = random_element(currencies)?;
-        let amount: u32 = rng.gen_range(0..500) * 100;
+        let amount: u32 = rng.gen_range(0..50000); // Change the range of `amount`
+
 
         let product = match transaction {
             &"WITHDRAWAL" | &"DEPOSIT" => random_element(&iscash)?,
@@ -71,7 +73,7 @@ fn main() -> Result<(), MyError> {
         };
 
         writeln!(
-            file,
+            writer,
             "{},{},{},{},{},{},{},{},{}",
             client,
             orszag,
@@ -100,6 +102,8 @@ fn parse_client_ids_and_insert_into_vec(json_file_path: &str, output_file_path: 
     // Parse the top-level JSON object and extract the "data" array
     let json_object: serde_json::Value = serde_json::from_str(&contents)?;
     let data_array = json_object.get("data").unwrap().as_array().unwrap();
+    // Pre-allocate memory for the `clients` vector
+    clients.lock().unwrap().reserve(data_array.len());
 
     // Extract the "key" parameter from each object in the "data" array and write it to the output file
     let output_file = Arc::new(Mutex::new(File::create(output_file_path).unwrap()));
