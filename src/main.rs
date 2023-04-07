@@ -26,7 +26,7 @@ fn main() -> Result<(), MyError> {
 // Define the possible values for each column
     let clients = clients_arc.lock().unwrap();
     let country_of_origin = vec!["New Zealand", "Singapore", "Viet Nam"];
-    let transactions = vec!["DEBIT", "CREDIT", "WITHRAVAL", "DEPOSIT"];
+    let transactions = vec!["DEBIT", "CREDIT", "WITHDRAWAL", "DEPOSIT"];
     let iscash = vec!["CASH", "TRANSFER"];
     let partners = (1..=55).map(|n| format!("partner{}", n)).collect::<Vec<_>>();
     let currencies = CCY;
@@ -49,16 +49,23 @@ fn main() -> Result<(), MyError> {
     for _ in 0..10000 {
         let client = random_element(&clients)?;
         // rest of the code that uses the `client` variable
-
+        let orszag = random_element(&country_of_origin)?;
         let transaction = random_element(&transactions)?;
-        let date = NaiveDate::from_ymd_opt(2023, 1, 1).unwrap() - chrono::Duration::days(rng.gen_range(0..365));
-        let partner = random_element(&partners)?;
-        let country = random_element(&countries)?;
-        let ccy = random_element(&currencies)?;
+        let date = NaiveDate::from_ymd_opt(2023, 6, 6).unwrap() -
+            chrono::Duration::days(rng.gen_range(0..500));
+        // let partner = random_element(&partners)?;
+        let partner = if *transaction == "WITHDRAWAL" || *transaction == "DEPOSIT" {
+            client.clone()
+        } else {
+            random_element(&partners)?.to_owned()
+        };
+
+        let country = random_element(countries)?;
+        let ccy = random_element(currencies)?;
         let amount: u32 = rng.gen_range(0..500) * 100;
 
         let product = match transaction {
-            &"WITHRAVAL" | &"DEPOSIT" => random_element(&iscash)?,
+            &"WITHDRAWAL" | &"DEPOSIT" => random_element(&iscash)?,
             &"DEBIT" | &"CREDIT" => random_element(&producst_services)?,
             _ => unreachable!(), // this should never happen
         };
@@ -67,7 +74,7 @@ fn main() -> Result<(), MyError> {
             file,
             "{},{},{},{},{},{},{},{},{}",
             client,
-            random_element(&country_of_origin)?,
+            orszag,
             transaction,
             date.format("%Y-%m-%d"), // format the date as YYYY-MM-DD
             partner,
